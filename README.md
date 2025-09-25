@@ -4,6 +4,8 @@ Array
 
 Semester project @ cosmology group, ETH Zürich
 
-
 Requirements
 $ pip install git+https://github.com/radiocosmology/draco.git
+
+Data
+/net/ipa-gate.phys.ethz.ch/export/ipa/refreg/data/HIRAX_Klerefontein
