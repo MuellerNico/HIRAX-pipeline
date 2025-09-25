@@ -1,0 +1,34 @@
+# key value pairs
+s: this-is-a-string
+s2: "also-a-string"
+s3: 'special characters need quotes \n'
+
+aninteger: 9000
+afloat: 1.7
+
+group:
+  key: value
+  key2: 1234
+
+# use yaml validator to check for sensitive indentation etc
+# https://www.yamllint.com/
+# or vscode plugin
+
+list:
+  - item1
+  - item2
+  - item3
+
+also_a_list: [one, two, three]
+
+list_of_objects:
+  - name: item1
+    value: 10
+  - name: item2
+    value: 20
+
+booleanval: true
+alsobool: yes
+anotherbool: off
+
+
