@@ -1,0 +1,15 @@
+config:
+    beamtransfers:      No
+    kltransform:        No
+    psfisher:           No
+    
+    #output_directory: /home/devin/Dropbox/arcturus/Projects/radio/hirax/klerefontein/kf_pipe_lite/telescope_configs/bt/241211_kf_config1
+    output_directory: /home/uranus/HIRAX-pipeline/out
+
+telescope:
+    type:
+        class: HIRAXKlerefonteinPrototypeMinimal
+        module: kf_pipe_lite.metadata.telescope
+
+    kf_config: "241211-config1"
+
