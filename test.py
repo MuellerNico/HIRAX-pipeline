@@ -10,6 +10,7 @@ for filename in os.listdir(folder):
         with h5py.File(filepath, "r") as f:
             weights = f["flags"]["vis_weight"][()]
             print(f"File: {filename}")
+            print(weights.shape)
             n_zero = np.sum(weights == 0)
             n_nan = np.sum(np.isnan(weights))
             n_inf = np.sum(np.isinf(weights))

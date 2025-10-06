@@ -54,3 +54,23 @@
 #         dist_ts.vis[:][bads] = 0
 #         self._file_index += 1
 #         return dist_ts
+
+
+# class Debug(SingleTask):
+#     def process(self, ts):
+#         # log shape and means
+#         self.log.info(f"Data shape: {ts.vis.shape}")
+#         self.log.info(f"Data mean: {np.mean(ts.vis[:])}")
+#         self.log.info(f"Weight shape: {ts.weight.shape}")
+#         self.log.info(f"Weight mean: {np.mean(ts.weight[:])}")
+#         # randomly pick and log some values from vis data
+#         vis_local = ts.vis.local_data
+#         rand_flat_indices = np.random.randint(0, vis_local.size, size=20)
+#         rand_values = vis_local.ravel()[rand_flat_indices]
+#         self.log.info(f"Randomly sampled vis values:\n{rand_values}")
+#         # randomly pick and log some values from weight data
+#         wt_local = ts.weight.local_data
+#         rand_flat_indices_wt = np.random.randint(0, wt_local.size, size=20)
+#         rand_values_wt = wt_local.ravel()[rand_flat_indices_wt]
+#         self.log.info(f"Randomly sampled weight values:\n{rand_values_wt}")
+#         return ts
