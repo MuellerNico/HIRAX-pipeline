@@ -1,0 +1,95 @@
+pipeline:
+  logging:
+    root: INFO
+
+  tasks:
+    - type: draco.core.io.LoadProductManager
+      out: manager
+      params:
+        #product_directory: /home/uranus/kf-pipe-lite/telescope_configs/bt/241211_kf_config1
+        product_directory: /cluster/home/nicolmueller/kf-pipe-lite/telescope_configs/bt/241211_kf_config1
+
+    # Query the files
+    - type: kf_pipe_lite.metadata.KFTimeStreamsFromQuery
+      out: filelist
+      params:
+        #data_directory: /home/uranus/HIRAX/data
+        data_directory: /cluster/work/refregier/dcrichton/HIRAX_Klerefontein
+        #query: "run_tag == '20241212T105444Z_HartRAO_corr' & start_time >= '2024-12-12' & start_time < '2024-12-17'"
+        query: "(run_tag == '20250510T131606Z_Klerefontein_corr' & start_time >= '2025-05-11' & start_time <= '2025-05-25')" #" | (run_tag == '20241212T105444Z_HartRAO_corr' & start_time >= '2024-12-12' & start_time < '2024-12-17')" 
+        # query: "run_tag == '20250510T131606Z_Klerefontein_corr'"
+        filter_missing: true
+
+    # Load in the data from the filelist
+    - type: kf_pipe_lite.metadata.ProcessCorrData
+      requires: filelist
+      out: tstream
+
+    # Concatenate together all the days timestream information
+    - type: draco.analysis.sidereal.SiderealGrouper
+      requires: manager
+      in: tstream
+      out: tstream_day      
+
+    # Calculate a RFI mask from Stokes I visibilities
+    - type: kf_pipe_lite.analysis.KFStokesIMask # subclassed version of draco.analysis.flagging.RFIStokesIMask
+      requires: manager
+      in: tstream_day
+      out: [rfimask_stokesi, power_out]
+      params:
+        save: false #true
+        output_name:
+          - "rfi_mask_stokesi_{tag}.h5"
+          - "lowpass_power_{tag}.h5" # power outputs
+        solar_var_boost: 1.0
+        sigma_high: 6.0
+        sigma_low: 1.0
+        nsigma: 1
+        max_m: 128
+
+    # Apply the StokesI RFI mask. This will modify the data in place.
+    - type: draco.analysis.flagging.ApplyTimeFreqMask
+      in: [tstream_day, rfimask_stokesi]
+      out: tstream_day_rfi
+
+    # Fully remove any frequencies which are mostly flagged. A threshold
+    # of 0.3 (30%) generally only removes ~0.4-0.8% of additional data,
+    # but has a noticeably positive effect on high-delay noise
+    - type: draco.analysis.flagging.MaskFreq
+      in: tstream_day_rfi
+      out: freq_mask
+      params:
+        freq_frac: 0.3
+        save: false #true
+        output_name: "rfi_mask_freq_{tag}.h5"
+
+    # Apply the frequency mask
+    - type: draco.analysis.flagging.ApplyTimeFreqMask
+      in: [tstream_day_rfi, freq_mask]
+      out: tstream_flagged
+
+    # Rebin the timestream to a fixed number of samples per sidereal day
+    - type: draco.analysis.sidereal.SiderealRebinner
+      requires: manager
+      in: tstream_flagged
+      out: sstream_flagged
+      params:
+        samples: 4096
+        weight: inverse_variance
+
+    # # Save the truncated sidereal stream to a .zarr file and start a background
+    # # task to zip it
+    # - type: draco.core.io.SaveZarrZip
+    #   in: sstream_flagged
+    #   out: sstream_flagged_handle
+    #   params:
+    #     compression:
+    #       vis:
+    #         chunks: [512, 1, 512]
+    #       vis_weight:
+    #         chunks: [512, 1, 512]
+    #     save: false # true
+    #     output_name: "sstream_masked_{tag}.zarr.zip"
+
+    # - type: draco.core.io.WaitZarrZip
+    #   in: sstream_flagged_handle 
